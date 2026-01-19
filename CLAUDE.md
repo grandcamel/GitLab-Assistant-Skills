@@ -21,14 +21,24 @@ See `/gitlab-assistant-setup` for installation instructions.
 | Skill | Purpose | Location |
 |-------|---------|----------|
 | `gitlab-assistant` | Hub skill - routes to specialized skills | `skills/gitlab-assistant/` |
-| `gitlab-mr` | Mr operations | `skills/gitlab-mr/` |
+| `gitlab-mr` | Merge request operations | `skills/gitlab-mr/` |
 | `gitlab-issue` | Issue operations | `skills/gitlab-issue/` |
-| `gitlab-ci` | Ci operations | `skills/gitlab-ci/` |
-| `gitlab-repo` | Repo operations | `skills/gitlab-repo/` |
+| `gitlab-ci` | CI/CD pipeline operations | `skills/gitlab-ci/` |
+| `gitlab-repo` | Repository operations | `skills/gitlab-repo/` |
 | `gitlab-release` | Release operations | `skills/gitlab-release/` |
 | `gitlab-label` | Label operations | `skills/gitlab-label/` |
 | `gitlab-milestone` | Milestone operations | `skills/gitlab-milestone/` |
-| `gitlab-variable` | Variable operations | `skills/gitlab-variable/` |
+| `gitlab-variable` | CI/CD variable operations | `skills/gitlab-variable/` |
+| `gitlab-group` | Group/team management (API) | `skills/gitlab-group/` |
+| `gitlab-search` | Global/project/group search (API) | `skills/gitlab-search/` |
+| `gitlab-protected-branch` | Branch protection rules (API) | `skills/gitlab-protected-branch/` |
+| `gitlab-webhook` | Webhook management (API) | `skills/gitlab-webhook/` |
+| `gitlab-file` | Repository file operations (API) | `skills/gitlab-file/` |
+| `gitlab-wiki` | Wiki page management (API) | `skills/gitlab-wiki/` |
+| `gitlab-discussion` | MR/Issue discussions (API) | `skills/gitlab-discussion/` |
+| `gitlab-badge` | Project badges (API) | `skills/gitlab-badge/` |
+| `gitlab-container` | Container registry (API) | `skills/gitlab-container/` |
+| `gitlab-vulnerability` | Security vulnerabilities (API) | `skills/gitlab-vulnerability/` |
 
 
 ## Project Structure

@@ -23,6 +23,16 @@ Central hub for GitLab automation using the `glab` CLI. Routes requests to the m
 | Manage labels | `gitlab-label` | ⚠️ |
 | Manage milestones | `gitlab-milestone` | ⚠️ |
 | Manage CI/CD variables | `gitlab-variable` | ⚠️ |
+| Manage groups/teams | `gitlab-group` | ⚠️ |
+| Search GitLab | `gitlab-search` | - |
+| Protect branches | `gitlab-protected-branch` | ⚠️ |
+| Manage webhooks | `gitlab-webhook` | ⚠️ |
+| Repository file operations | `gitlab-file` | ⚠️ |
+| Manage wiki pages | `gitlab-wiki` | ⚠️ |
+| MR/Issue discussions | `gitlab-discussion` | ⚠️ |
+| Project badges | `gitlab-badge` | ⚠️ |
+| Container registry | `gitlab-container` | ⚠️⚠️ |
+| Security vulnerabilities | `gitlab-vulnerability` | ⚠️ |
 
 **Risk Legend**: - Safe | ⚠️ Caution | ⚠️⚠️ Warning | ⚠️⚠️⚠️ Danger
 
@@ -42,6 +52,16 @@ Route based on the GitLab resource being worked with:
 | label, tag (for issues/MRs) | `gitlab-label` |
 | milestone, sprint, iteration | `gitlab-milestone` |
 | variable, secret, env, CI variable | `gitlab-variable` |
+| group, team, organization, members, namespace | `gitlab-group` |
+| search, find, query (global/group/project) | `gitlab-search` |
+| protect branch, branch protection, access rules | `gitlab-protected-branch` |
+| webhook, hook, notification callback, integration | `gitlab-webhook` |
+| file, blob, content, raw (repository files) | `gitlab-file` |
+| wiki, documentation page | `gitlab-wiki` |
+| discussion, thread, comment, note, reply | `gitlab-discussion` |
+| badge, status badge, coverage badge | `gitlab-badge` |
+| container, registry, docker, image, tag (container) | `gitlab-container` |
+| vulnerability, security, scan, CVE, SAST, DAST | `gitlab-vulnerability` |
 
 ### Rule 2: Common Workflows
 
@@ -122,6 +142,76 @@ Example: "Release version 1.2.0"
 - **Risk**: ⚠️⚠️ (contains secrets)
 - **Triggers**: variable, secret, env var, CI variable
 
+### gitlab-group (Groups - API)
+
+- **Purpose**: Manage groups, members, subgroups via API
+- **Key commands**: `glab api groups`, `glab api groups/:id/members`
+- **Risk**: ⚠️ (group management)
+- **Triggers**: group, team, organization, members, namespace
+
+### gitlab-search (Search - API)
+
+- **Purpose**: Search across GitLab (projects, issues, code, etc.)
+- **Key commands**: `glab api "search?scope=...&search=..."`
+- **Risk**: - (read-only)
+- **Triggers**: search, find, query
+
+### gitlab-protected-branch (Protected Branches - API)
+
+- **Purpose**: Manage branch protection rules
+- **Key commands**: `glab api projects/:id/protected_branches`
+- **Risk**: ⚠️ (affects branch access)
+- **Triggers**: protect branch, branch protection, access rules
+
+### gitlab-webhook (Webhooks - API)
+
+- **Purpose**: Manage project webhooks
+- **Key commands**: `glab api projects/:id/hooks`
+- **Risk**: ⚠️ (external integrations)
+- **Triggers**: webhook, hook, notification, integration
+
+### gitlab-file (Repository Files - API)
+
+- **Purpose**: Read/write repository files via API
+- **Key commands**: `glab api projects/:id/repository/files/:path`
+- **Risk**: ⚠️ (modifies files)
+- **Triggers**: file, blob, content, raw
+
+### gitlab-wiki (Wiki - API)
+
+- **Purpose**: Manage project wiki pages
+- **Key commands**: `glab api projects/:id/wikis`
+- **Risk**: ⚠️ (documentation changes)
+- **Triggers**: wiki, documentation page
+
+### gitlab-discussion (Discussions - API)
+
+- **Purpose**: Manage threaded discussions on MRs/issues
+- **Key commands**: `glab api projects/:id/merge_requests/:iid/discussions`
+- **Risk**: ⚠️ (comments)
+- **Triggers**: discussion, thread, comment, note, reply
+
+### gitlab-badge (Badges - API)
+
+- **Purpose**: Manage project badges
+- **Key commands**: `glab api projects/:id/badges`
+- **Risk**: ⚠️ (project display)
+- **Triggers**: badge, status badge, coverage badge
+
+### gitlab-container (Container Registry - API)
+
+- **Purpose**: Manage container registry images and tags
+- **Key commands**: `glab api projects/:id/registry/repositories`
+- **Risk**: ⚠️⚠️ (delete images is destructive)
+- **Triggers**: container, registry, docker, image
+
+### gitlab-vulnerability (Vulnerabilities - API)
+
+- **Purpose**: Manage security vulnerabilities (Ultimate)
+- **Key commands**: `glab api projects/:id/vulnerabilities`
+- **Risk**: ⚠️ (security state changes)
+- **Triggers**: vulnerability, security, scan, CVE
+
 ## Connection Verification
 
 Before any operation, verify GitLab is configured:
@@ -185,5 +275,6 @@ When request is ambiguous, ask for clarification:
 ## Related Documentation
 
 - [Decision Tree](./docs/DECISION_TREE.md)
+- [API Helpers](../shared/docs/API_HELPERS.md)
 - [Safeguards](../shared/docs/SAFEGUARDS.md)
 - [Quick Reference](../shared/docs/QUICK_REFERENCE.md)
