@@ -1,0 +1,11 @@
+{
+  "name": "gitlab-assistant-skills",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "gitlab-assistant-skills",
+      "source": "./",
+      "description": "GitLab automation skills for Claude Code"
+    }
+  ]
+}

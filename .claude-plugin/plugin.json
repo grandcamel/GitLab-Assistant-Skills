@@ -1,0 +1,19 @@
+{
+  "name": "gitlab-assistant-skills",
+  "version": "1.0.0",
+  "description": "Claude Code skills for GitLab automation",
+  "skills": [
+    "../skills/gitlab-assistant/SKILL.md",
+    "../skills/gitlab-mr/SKILL.md",
+    "../skills/gitlab-issue/SKILL.md",
+    "../skills/gitlab-ci/SKILL.md",
+    "../skills/gitlab-repo/SKILL.md",
+    "../skills/gitlab-release/SKILL.md",
+    "../skills/gitlab-label/SKILL.md",
+    "../skills/gitlab-milestone/SKILL.md",
+    "../skills/gitlab-variable/SKILL.md"
+  ],
+  "commands": [
+    "./commands/*.md"
+  ]
+}
