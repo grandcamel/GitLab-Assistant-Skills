@@ -2,27 +2,12 @@
   "name": "gitlab-assistant-skills",
   "version": "1.1.0",
   "description": "Claude Code skills for GitLab automation",
-  "skills": [
-    "../skills/gitlab-assistant/SKILL.md",
-    "../skills/gitlab-mr/SKILL.md",
-    "../skills/gitlab-issue/SKILL.md",
-    "../skills/gitlab-ci/SKILL.md",
-    "../skills/gitlab-repo/SKILL.md",
-    "../skills/gitlab-release/SKILL.md",
-    "../skills/gitlab-label/SKILL.md",
-    "../skills/gitlab-milestone/SKILL.md",
-    "../skills/gitlab-variable/SKILL.md",
-    "../skills/gitlab-group/SKILL.md",
-    "../skills/gitlab-search/SKILL.md",
-    "../skills/gitlab-protected-branch/SKILL.md",
-    "../skills/gitlab-webhook/SKILL.md",
-    "../skills/gitlab-file/SKILL.md",
-    "../skills/gitlab-wiki/SKILL.md",
-    "../skills/gitlab-discussion/SKILL.md",
-    "../skills/gitlab-badge/SKILL.md",
-    "../skills/gitlab-container/SKILL.md",
-    "../skills/gitlab-vulnerability/SKILL.md"
-  ],
+  "author": {
+    "name": "Jason Krueger"
+  },
+  "repository": "https://github.com/grandcamel/GitLab-Assistant-Skills",
+  "license": "MIT",
+  "keywords": ["gitlab", "ci-cd", "merge-requests", "issues", "pipelines", "devops"],
   "commands": [
     "./commands/*.md"
   ]
