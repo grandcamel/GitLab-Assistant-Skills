@@ -1,0 +1,101 @@
+# GitLab EE Docker Compose for Live Integration Testing
+# Memory-optimized configuration for local development
+#
+# Usage:
+#   docker compose up -d           # Start GitLab
+#   docker compose logs -f gitlab  # Watch logs
+#   docker compose down -v         # Stop and remove volumes
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:17.7.0-ee.0
+    container_name: gitlab-live-test
+    hostname: gitlab.local
+    restart: unless-stopped
+
+    environment:
+      # External URL configuration
+      GITLAB_OMNIBUS_CONFIG: |
+        # URL Configuration
+        external_url 'http://localhost:8080'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+
+        # Memory Optimization - disable unused services
+        prometheus_monitoring['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+
+        # Disable KAS (Kubernetes Agent Server)
+        gitlab_kas['enable'] = false
+
+        # Puma (web server) optimization
+        puma['worker_processes'] = 2
+        puma['min_threads'] = 1
+        puma['max_threads'] = 4
+        puma['worker_timeout'] = 300
+        puma['listen'] = '127.0.0.1'
+        puma['port'] = 8181
+
+        # Sidekiq optimization
+        sidekiq['max_concurrency'] = 10
+        sidekiq['min_concurrency'] = 1
+
+        # PostgreSQL optimization
+        postgresql['shared_buffers'] = '256MB'
+        postgresql['max_worker_processes'] = 4
+
+        # Registry - disabled by default, enable with ENABLE_REGISTRY=true
+        registry['enable'] = ${ENABLE_REGISTRY:-false}
+        registry_external_url 'http://localhost:5050' if ${ENABLE_REGISTRY:-false}
+
+        # Git configuration
+        gitlab_rails['gitlab_default_projects_features_builds'] = true
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = ${ENABLE_REGISTRY:-false}
+
+        # Reduce backup complexity
+        gitlab_rails['backup_keep_time'] = 0
+
+        # License file (optional - for Ultimate features)
+        # gitlab_rails['initial_license_file'] = '/etc/gitlab/license.gitlab-license'
+
+    ports:
+      - "8080:8080"     # HTTP
+      - "8443:443"      # HTTPS
+      - "2222:22"       # SSH
+      - "5050:5050"     # Container Registry (if enabled)
+
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+      # Uncomment to add license file for Ultimate features
+      # - ./license.gitlab-license:/etc/gitlab/license.gitlab-license:ro
+
+    shm_size: '256m'
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/-/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 300s  # 5 minutes for initial startup
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+volumes:
+  gitlab_config:
+    name: gitlab-live-test-config
+  gitlab_logs:
+    name: gitlab-live-test-logs
+  gitlab_data:
+    name: gitlab-live-test-data

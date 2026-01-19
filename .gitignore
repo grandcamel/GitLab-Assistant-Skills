@@ -47,11 +47,16 @@ Thumbs.db
 # Credentials - NEVER COMMIT
 .env
 *.env
+.env.test
 *.pem
 *.key
 credentials.json
 *.local.json
 *.local.md
+
+# Live test artifacts
+tests/live/.env.test
+*-results.xml
 
 # Logs
 *.log

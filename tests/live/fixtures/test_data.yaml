@@ -1,0 +1,235 @@
+# Test Data Definitions for GitLab Live Integration Tests
+# This file serves as reference documentation for test data created by create-test-data.sh
+
+---
+# Groups
+groups:
+  main:
+    name: Live Test Group
+    path: live-test-group
+    visibility: private
+    description: Group for live integration tests
+
+  subgroup:
+    name: Test Subgroup
+    path: subgroup
+    parent: live-test-group
+    visibility: private
+
+# Users and Access Levels
+users:
+  root:
+    username: root
+    access_level: owner
+    scopes:
+      - api
+      - read_api
+      - read_user
+      - read_repository
+      - write_repository
+      - read_registry
+      - write_registry
+      - sudo
+
+  test-maintainer:
+    username: test-maintainer
+    email: maintainer@test.local
+    name: Test Maintainer
+    access_level: 40  # Maintainer
+    scopes:
+      - api
+      - read_api
+      - read_user
+      - read_repository
+      - write_repository
+
+  test-developer:
+    username: test-developer
+    email: developer@test.local
+    name: Test Developer
+    access_level: 30  # Developer
+    scopes:
+      - api
+      - read_api
+      - read_user
+      - read_repository
+      - write_repository
+
+  test-reporter:
+    username: test-reporter
+    email: reporter@test.local
+    name: Test Reporter
+    access_level: 20  # Reporter
+    scopes:
+      - api
+      - read_api
+      - read_user
+      - read_repository
+
+# Projects
+projects:
+  main:
+    name: Test Project
+    path: test-project
+    namespace: live-test-group
+    visibility: private
+    initialize_with_readme: true
+    default_branch: main
+
+  secondary:
+    name: Test Project Secondary
+    path: test-project-secondary
+    namespace: live-test-group
+    visibility: private
+    initialize_with_readme: true
+
+# Labels
+labels:
+  - name: bug
+    color: "#ff0000"
+    description: Bug report
+
+  - name: enhancement
+    color: "#00ff00"
+    description: Feature enhancement
+
+  - name: documentation
+    color: "#0000ff"
+    description: Documentation changes
+
+  - name: "priority::high"
+    color: "#ff6600"
+    description: High priority
+
+  - name: "priority::low"
+    color: "#999999"
+    description: Low priority
+
+  - name: "status::todo"
+    color: "#ededed"
+    description: To do
+
+  - name: "status::in-progress"
+    color: "#fbca04"
+    description: In progress
+
+  - name: "status::done"
+    color: "#0e8a16"
+    description: Done
+
+# Milestones
+milestones:
+  - title: v1.0.0
+    description: First release
+    due_date: "2025-03-01"
+
+  - title: v1.1.0
+    description: Minor release
+    due_date: "2025-06-01"
+
+  - title: v2.0.0
+    description: Major release
+    due_date: "2025-12-01"
+
+# Issues
+issues:
+  - iid: 1
+    title: "Bug: Application crashes on startup"
+    description: |
+      When running main.py, the application crashes.
+
+      ## Steps to reproduce
+      1. Run main.py
+      2. Observe crash
+    labels:
+      - bug
+      - "priority::high"
+    state: opened
+
+  - iid: 2
+    title: "Enhancement: Add logging support"
+    description: We should add proper logging to the application.
+    labels:
+      - enhancement
+      - "priority::low"
+    state: opened
+
+  - iid: 3
+    title: "Documentation: Update README"
+    description: The README needs to be updated with installation instructions.
+    labels:
+      - documentation
+    state: opened
+
+  - iid: 4
+    title: "Bug: Fixed typo in output"
+    description: Fixed a typo.
+    labels:
+      - bug
+    state: closed
+
+# Merge Requests
+merge_requests:
+  - iid: 1
+    title: Add new feature
+    description: |
+      This MR adds a new feature.
+
+      Closes #2
+    source_branch: feature/test-branch
+    target_branch: main
+    state: opened
+
+# Branches
+branches:
+  - name: main
+    protected: true
+  - name: feature/test-branch
+    protected: false
+
+# Repository Files
+files:
+  - path: src/main.py
+    branch: main
+  - path: .gitlab-ci.yml
+    branch: main
+  - path: tests/__init__.py
+    branch: main
+  - path: tests/test_main.py
+    branch: main
+  - path: src/feature.py
+    branch: feature/test-branch
+
+# CI/CD Variables
+variables:
+  - key: TEST_VAR
+    value: test_value
+    protected: false
+    masked: false
+
+  - key: SECRET_VAR
+    value: secret_value
+    protected: true
+    masked: true
+
+# Webhooks
+webhooks:
+  - url: https://example.com/webhook
+    push_events: true
+    merge_requests_events: true
+    issues_events: true
+
+# Wiki Pages
+wiki_pages:
+  - title: Home
+    slug: home
+    format: markdown
+
+  - title: Getting Started
+    slug: getting-started
+    format: markdown
+
+# Badges
+badges:
+  - link_url: https://example.com/coverage
+    image_url: https://img.shields.io/badge/coverage-80%25-green

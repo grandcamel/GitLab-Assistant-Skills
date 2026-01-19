@@ -1,0 +1,347 @@
+# Live Integration Tests for GitLab Assistant Skills
+#
+# Runs weekly against a local GitLab EE instance in Docker.
+# Can also be triggered manually via workflow_dispatch.
+#
+# Phases:
+#   - p0: Core tests (group, repo, issue, mr, ci)
+#   - p1: Management tests (label, milestone, release, variable)
+#   - p2: API tests (search, webhook, file, wiki, etc.)
+#   - p3: Advanced tests (container, vulnerability) - optional
+
+name: Live Integration Tests
+
+on:
+  # Run weekly on Sunday at 2:00 AM UTC
+  schedule:
+    - cron: '0 2 * * 0'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      phases:
+        description: 'Test phases to run (comma-separated: p0,p1,p2,p3 or "all")'
+        required: false
+        default: 'p0,p1,p2'
+        type: string
+      enable_registry:
+        description: 'Enable container registry for P3 tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  GITLAB_VERSION: '17.7.0-ee.0'
+  GITLAB_URL: 'http://localhost:8080'
+  GITLAB_HOST: 'localhost:8080'
+
+jobs:
+  setup-gitlab:
+    name: Setup GitLab
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    outputs:
+      gitlab_ready: ${{ steps.wait.outputs.ready }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start GitLab
+        working-directory: tests/live
+        env:
+          ENABLE_REGISTRY: ${{ github.event.inputs.enable_registry || 'false' }}
+        run: |
+          docker compose up -d
+          echo "GitLab container started"
+
+      - name: Wait for GitLab
+        id: wait
+        working-directory: tests/live
+        run: |
+          chmod +x scripts/wait-for-gitlab.sh
+          if ./scripts/wait-for-gitlab.sh --timeout 900; then
+            echo "ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Setup test environment
+        working-directory: tests/live
+        run: |
+          chmod +x scripts/setup-gitlab.sh scripts/create-test-data.sh
+          ./scripts/setup-gitlab.sh
+          ./scripts/create-test-data.sh
+
+      - name: Install glab CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y glab
+
+      - name: Configure glab
+        working-directory: tests/live
+        run: |
+          source .env.test
+          echo "$GITLAB_TOKEN" | glab auth login --hostname localhost:8080 --stdin
+
+      - name: Upload test environment
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-env
+          path: tests/live/.env.test
+          retention-days: 1
+
+  test-p0:
+    name: P0 Core Tests
+    needs: setup-gitlab
+    if: ${{ needs.setup-gitlab.outputs.gitlab_ready == 'true' && (contains(github.event.inputs.phases || 'p0,p1,p2', 'p0') || github.event.inputs.phases == 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      gitlab:
+        image: gitlab/gitlab-ee:17.7.0-ee.0
+        ports:
+          - 8080:80
+        options: >-
+          --shm-size=256m
+          --health-cmd="curl -f http://localhost:80/-/readiness || exit 1"
+          --health-interval=30s
+          --health-timeout=10s
+          --health-retries=20
+          --health-start-period=300s
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio
+
+      - name: Download test environment
+        uses: actions/download-artifact@v4
+        with:
+          name: test-env
+          path: tests/live/
+
+      - name: Install glab CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y glab
+
+      - name: Configure glab
+        working-directory: tests/live
+        run: |
+          source .env.test
+          echo "$GITLAB_TOKEN" | glab auth login --hostname localhost:8080 --stdin
+
+      - name: Run P0 tests
+        working-directory: tests/live
+        run: |
+          source .env.test
+          pytest skills/ -v -m "p0" --tb=short --junitxml=p0-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-test-results
+          path: tests/live/p0-results.xml
+          retention-days: 30
+
+  test-p1:
+    name: P1 Management Tests
+    needs: [setup-gitlab, test-p0]
+    if: ${{ needs.setup-gitlab.outputs.gitlab_ready == 'true' && (contains(github.event.inputs.phases || 'p0,p1,p2', 'p1') || github.event.inputs.phases == 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pytest pytest-asyncio
+
+      - name: Download test environment
+        uses: actions/download-artifact@v4
+        with:
+          name: test-env
+          path: tests/live/
+
+      - name: Install and configure glab
+        working-directory: tests/live
+        run: |
+          sudo apt-get update && sudo apt-get install -y glab
+          source .env.test
+          echo "$GITLAB_TOKEN" | glab auth login --hostname localhost:8080 --stdin
+
+      - name: Run P1 tests
+        working-directory: tests/live
+        run: |
+          source .env.test
+          pytest skills/ -v -m "p1" --tb=short --junitxml=p1-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-test-results
+          path: tests/live/p1-results.xml
+          retention-days: 30
+
+  test-p2:
+    name: P2 API Tests
+    needs: [setup-gitlab, test-p1]
+    if: ${{ needs.setup-gitlab.outputs.gitlab_ready == 'true' && (contains(github.event.inputs.phases || 'p0,p1,p2', 'p2') || github.event.inputs.phases == 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pytest pytest-asyncio
+
+      - name: Download test environment
+        uses: actions/download-artifact@v4
+        with:
+          name: test-env
+          path: tests/live/
+
+      - name: Install and configure glab
+        working-directory: tests/live
+        run: |
+          sudo apt-get update && sudo apt-get install -y glab
+          source .env.test
+          echo "$GITLAB_TOKEN" | glab auth login --hostname localhost:8080 --stdin
+
+      - name: Run P2 tests
+        working-directory: tests/live
+        run: |
+          source .env.test
+          pytest skills/ -v -m "p2" --tb=short --junitxml=p2-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-test-results
+          path: tests/live/p2-results.xml
+          retention-days: 30
+
+  test-p3:
+    name: P3 Advanced Tests
+    needs: [setup-gitlab, test-p2]
+    if: ${{ needs.setup-gitlab.outputs.gitlab_ready == 'true' && (contains(github.event.inputs.phases || '', 'p3') || github.event.inputs.phases == 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pytest pytest-asyncio
+
+      - name: Download test environment
+        uses: actions/download-artifact@v4
+        with:
+          name: test-env
+          path: tests/live/
+
+      - name: Install and configure glab
+        working-directory: tests/live
+        run: |
+          sudo apt-get update && sudo apt-get install -y glab
+          source .env.test
+          echo "$GITLAB_TOKEN" | glab auth login --hostname localhost:8080 --stdin
+
+      - name: Run P3 tests
+        working-directory: tests/live
+        run: |
+          source .env.test
+          # P3 tests may skip if registry/Ultimate not available
+          pytest skills/ -v -m "p3" --tb=short --junitxml=p3-results.xml || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-test-results
+          path: tests/live/p3-results.xml
+          retention-days: 30
+
+  summary:
+    name: Test Summary
+    needs: [test-p0, test-p1, test-p2, test-p3]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-test-results'
+          merge-multiple: true
+
+      - name: Generate summary
+        run: |
+          echo "# Live Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Phases" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for phase in p0 p1 p2 p3; do
+            if [ -f "${phase}-results.xml" ]; then
+              tests=$(grep -oP 'tests="\K[^"]+' "${phase}-results.xml" | head -1)
+              failures=$(grep -oP 'failures="\K[^"]+' "${phase}-results.xml" | head -1)
+              errors=$(grep -oP 'errors="\K[^"]+' "${phase}-results.xml" | head -1)
+
+              if [ "$failures" = "0" ] && [ "$errors" = "0" ]; then
+                status="✅"
+              else
+                status="❌"
+              fi
+
+              echo "- **${phase^^}**: ${status} ${tests} tests, ${failures} failures, ${errors} errors" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- **${phase^^}**: ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See artifacts for detailed test results." >> $GITHUB_STEP_SUMMARY

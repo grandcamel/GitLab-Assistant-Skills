@@ -45,19 +45,22 @@ See `/gitlab-assistant-setup` for installation instructions.
 
 ```
 GitLab-Assistant-Skills/
-├── .claude-plugin/           # Plugin manifest and commands
+├── .claude-plugin/           # Plugin manifest only
 │   ├── plugin.json          # Plugin definition
-│   ├── marketplace.json     # Marketplace registry
-│   └── commands/            # Slash commands
-├── skills/                   # Skill documentation
-│   ├── gitlab-assistant/   # Hub/router skill
-│   ├── gitlab-*/           # Feature skills
+│   └── marketplace.json     # Marketplace registry
+├── commands/                 # Slash commands (at project root)
+├── skills/                   # Skill documentation (autodiscovered)
+│   ├── gitlab-assistant/    # Hub/router skill
+│   ├── gitlab-*/            # Feature skills
 │   └── shared/              # Shared docs and config
 ├── conftest.py              # Root test fixtures
 ├── pytest.ini               # Test configuration
 ├── VERSION                  # Single version source
-└── CLAUDE.md               # This file
+└── CLAUDE.md                # This file
 ```
+
+Note: All plugin components (commands/, skills/) are at project root.
+Paths in `.claude-plugin/plugin.json` are relative to project root.
 
 ## Configuration
 
