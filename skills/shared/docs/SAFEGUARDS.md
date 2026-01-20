@@ -56,3 +56,124 @@
 | API outage | Check GitLab status page |
 | Security incident | Contact security team |
 | Data loss | Contact backup administrator |
+
+---
+
+<!-- PERMISSIONS
+permissions:
+  cli: glab
+  operations:
+    # Safe - Read-only operations (list/view/status)
+    - pattern: "glab mr list *"
+      risk: safe
+    - pattern: "glab mr view *"
+      risk: safe
+    - pattern: "glab mr status *"
+      risk: safe
+    - pattern: "glab mr diff *"
+      risk: safe
+    - pattern: "glab issue list *"
+      risk: safe
+    - pattern: "glab issue view *"
+      risk: safe
+    - pattern: "glab issue status *"
+      risk: safe
+    - pattern: "glab repo list *"
+      risk: safe
+    - pattern: "glab repo view *"
+      risk: safe
+    - pattern: "glab ci list *"
+      risk: safe
+    - pattern: "glab ci view *"
+      risk: safe
+    - pattern: "glab ci status *"
+      risk: safe
+    - pattern: "glab ci trace *"
+      risk: safe
+    - pattern: "glab release list *"
+      risk: safe
+    - pattern: "glab release view *"
+      risk: safe
+    - pattern: "glab auth status *"
+      risk: safe
+    - pattern: "glab project list *"
+      risk: safe
+    - pattern: "glab project view *"
+      risk: safe
+    - pattern: "glab label list *"
+      risk: safe
+    - pattern: "glab variable list *"
+      risk: safe
+    - pattern: "glab snippet list *"
+      risk: safe
+    - pattern: "glab snippet view *"
+      risk: safe
+
+    # Caution - Modifiable but easily reversible (create/approve/run)
+    - pattern: "glab mr create *"
+      risk: caution
+    - pattern: "glab mr approve *"
+      risk: caution
+    - pattern: "glab mr revoke *"
+      risk: caution
+    - pattern: "glab mr update *"
+      risk: caution
+    - pattern: "glab mr note *"
+      risk: caution
+    - pattern: "glab mr rebase *"
+      risk: caution
+    - pattern: "glab issue create *"
+      risk: caution
+    - pattern: "glab issue update *"
+      risk: caution
+    - pattern: "glab issue note *"
+      risk: caution
+    - pattern: "glab issue reopen *"
+      risk: caution
+    - pattern: "glab issue close *"
+      risk: caution
+    - pattern: "glab ci run *"
+      risk: caution
+    - pattern: "glab ci retry *"
+      risk: caution
+    - pattern: "glab ci cancel *"
+      risk: caution
+    - pattern: "glab release create *"
+      risk: caution
+    - pattern: "glab release upload *"
+      risk: caution
+    - pattern: "glab label create *"
+      risk: caution
+    - pattern: "glab variable set *"
+      risk: caution
+    - pattern: "glab snippet create *"
+      risk: caution
+    - pattern: "glab repo fork *"
+      risk: caution
+    - pattern: "glab repo clone *"
+      risk: caution
+
+    # Warning - Destructive but potentially recoverable (merge/delete)
+    - pattern: "glab mr merge *"
+      risk: warning
+    - pattern: "glab mr close *"
+      risk: warning
+    - pattern: "glab issue delete *"
+      risk: warning
+    - pattern: "glab release delete *"
+      risk: warning
+    - pattern: "glab label delete *"
+      risk: warning
+    - pattern: "glab variable delete *"
+      risk: warning
+    - pattern: "glab snippet delete *"
+      risk: warning
+    - pattern: "glab ci delete *"
+      risk: warning
+
+    # Danger - IRREVERSIBLE operations (repo delete)
+    - pattern: "glab repo delete *"
+      risk: danger
+    - pattern: "glab project delete *"
+      risk: danger
+-->
