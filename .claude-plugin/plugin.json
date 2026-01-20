@@ -7,8 +7,5 @@
   },
   "repository": "https://github.com/grandcamel/GitLab-Assistant-Skills",
   "license": "MIT",
-  "keywords": ["gitlab", "ci-cd", "merge-requests", "issues", "pipelines", "devops"],
-  "commands": [
-    "./commands/*.md"
-  ]
+  "keywords": ["gitlab", "ci-cd", "merge-requests", "issues", "pipelines", "devops"]
 }
